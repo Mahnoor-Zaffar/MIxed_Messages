@@ -1,0 +1,12 @@
+{
+  "name": "mixed-messages",
+  "version": "1.0.0",
+  "description": "Cyberpunk/Tech Fortune randomized message generator — a pure JS modular project.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
