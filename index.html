@@ -34,6 +34,12 @@
         <div class="term-title">NET_FORTUNE.exe — root@matrix:~$</div>
       </div>
 
+      <!-- ASCII Art header — filled dynamically; hidden until first generation -->
+      <pre class="ascii-art" id="ascii-art" hidden aria-hidden="true"></pre>
+
+      <!-- Separator between art and fortune body -->
+      <div class="term-art-divider" id="term-art-divider" hidden></div>
+
       <!-- Fortune display -->
       <div class="fortune-body" id="fortune-body">
         <!-- Filled dynamically by JS -->
@@ -82,19 +88,22 @@
   <script type="module">
     // ── Imports: reuse the existing JS module graph as-is ──────────────────
     import { generateMixedMessage } from "./src/engine/generator.js";
-    import { PERSONAS, THREATS, PROTOCOLS } from "./src/data/messages.js";
+    import { PERSONAS, THREATS, PROTOCOLS, ASCII_ART } from "./src/data/messages.js";
 
     // ── DOM refs ───────────────────────────────────────────────────────────
-    const panel      = document.getElementById("terminal-panel");
-    const body       = document.getElementById("fortune-body");
-    const tagline    = document.getElementById("term-tagline");
-    const btn        = document.getElementById("btn-generate");
-    const statCount  = document.getElementById("stat-count");
-    const statCombos = document.getElementById("stat-combos");
-    const statSeed   = document.getElementById("stat-seed");
+    const panel       = document.getElementById("terminal-panel");
+    const artEl       = document.getElementById("ascii-art");
+    const artDivider  = document.getElementById("term-art-divider");
+    const body        = document.getElementById("fortune-body");
+    const tagline     = document.getElementById("term-tagline");
+    const btn         = document.getElementById("btn-generate");
+    const statCount   = document.getElementById("stat-count");
+    const statCombos  = document.getElementById("stat-combos");
+    const statSeed    = document.getElementById("stat-seed");
 
     // ── Compute static stats ───────────────────────────────────────────────
-    const totalCombos = PERSONAS.length * THREATS.length * PROTOCOLS.length;
+    // Now includes ASCII_ART pool in the total unique combination count.
+    const totalCombos = PERSONAS.length * THREATS.length * PROTOCOLS.length * ASCII_ART.length;
     statCombos.textContent = totalCombos.toLocaleString();
     statSeed.textContent   = Math.random().toString(36).slice(2, 8).toUpperCase();
 
@@ -103,13 +112,12 @@
 
     // ── renderFortune ──────────────────────────────────────────────────────
     /**
-     * Calls generateMixedMessage(), parses the three components out of the
-     * returned string, and renders them into styled DOM rows.
+     * Calls generateMixedMessage() and renders the structured result into DOM.
      *
-     * We re-parse the raw string so that the generator module stays as the
-     * single source of truth for formatting logic. Alternatively the engine
-     * could export a structured object — but that would require changing the
-     * CLI output too, so parsing here keeps both interfaces happy.
+     * generateMixedMessage now returns { art, persona, threat, protocol, formatted }.
+     * We use the individual fields directly — no regex parsing of the formatted
+     * string needed. The ASCII art is rendered in a <pre> block to preserve
+     * exact whitespace and box-drawing characters.
      */
     function renderFortune() {
       // Prevent double-clicks during animation
@@ -123,21 +131,17 @@
 
       // Small deliberate delay — mimics "transmission incoming" feel
       setTimeout(() => {
-        // ── Generate raw message & extract the three lines ───────────────
-        // The generator returns a block string; we extract the three data
-        // lines using regex so the data layer owns the truth.
-        const raw = generateMixedMessage();
+        // ── Destructure the structured return value ────────────────────────
+        // No regex needed — each field is already a clean string.
+        const { art, persona, threat, protocol } = generateMixedMessage();
 
-        // Regex matches the text after "»" on each of the three data rows.
-        const personaMatch  = raw.match(/IDENTITY SCAN\s+»\s+You are a (.+)\./);
-        const threatMatch   = raw.match(/THREAT ASSESSMENT\s+»\s+The Net has determined that (.+)\./);
-        const protocolMatch = raw.match(/RECOMMENDED ACTION\s+»\s+(.+?)(?=\n|$)/);
+        // ── Render ASCII art block (TOP) ───────────────────────────────────
+        artEl.textContent = art;
+        artEl.hidden      = false;
+        artEl.removeAttribute("aria-hidden");
+        artDivider.hidden = false;
 
-        const persona  = personaMatch?.[1]  ?? "Unknown operative";
-        const threat   = threatMatch?.[1]   ?? "an unknown threat";
-        const protocol = protocolMatch?.[1] ?? "Stand by for further instructions.";
-
-        // ── Build DOM ───────────────────────────────────────────────────
+        // ── Build fortune rows (BOTTOM) ────────────────────────────────────
         body.innerHTML = `
           <div class="fortune-row">
             <span class="row-label identity">◉ Identity Scan</span>

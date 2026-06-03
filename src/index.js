@@ -20,8 +20,10 @@ import { generateMixedMessage } from "./engine/generator.js";
 // ─────────────────────────────────────────────────────────────────────────────
 (function run() {
   // Generate one unique fortune per execution.
-  const message = generateMixedMessage();
+  // generateMixedMessage returns a structured object; .formatted is the
+  // complete CLI-ready string: ASCII art → separator → fortune body.
+  const { formatted } = generateMixedMessage();
 
   // Print to stdout — the only console.log in the entire codebase.
-  console.log(message);
+  console.log(formatted);
 })();

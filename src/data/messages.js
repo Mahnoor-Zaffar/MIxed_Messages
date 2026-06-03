@@ -3,15 +3,18 @@
  * @description
  * The sole source of truth for all message data pools.
  *
- * Cyberpunk/Tech Fortune Theme — three distinct data arrays that form
- * the three pillars of every generated fortune:
+ * Cyberpunk/Tech Fortune Theme — four distinct data arrays that form
+ * the complete transmission structure:
  *
  *   1. PERSONAS  — Who you are in the Net (User Persona / Role)
  *   2. THREATS   — What danger lurks in the Matrix (Network Vulnerability)
  *   3. PROTOCOLS — What you must do about it (Netrunner Action Item)
+ *   4. ASCII_ART — Procedural terminal graphic header for each transmission
  *
  * Adding new fortunes is as simple as pushing a new string into any array.
  * All arrays are frozen to prevent accidental mutation at runtime.
+ *
+ * Total unique combinations: PERSONAS × THREATS × PROTOCOLS × ASCII_ART
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -57,4 +60,77 @@ export const PROTOCOLS = Object.freeze([
   "Overclock your threat-response daemon, hot-patch the vulnerability, and file an incident report in under 60 seconds.",
   "Sever the compromised neural link, brew synthcaff, and reboot your threat model from first principles.",
   "Fork your active session into a decoy process, let the hunters chase the ghost, and slip out through Port 0.",
+]);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PILLAR 4 — ASCII Art Assets
+// Procedural terminal graphic displayed at the top of each transmission.
+// Each entry is a multi-line string stored in a template literal to preserve
+// exact whitespace, indentation, and box-drawing characters.
+// ─────────────────────────────────────────────────────────────────────────────
+export const ASCII_ART = Object.freeze([
+
+  // ── 1. Cyberspace Skull ────────────────────────────────────────────────────
+  `
+     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+    ░  ┌─────────────────────┐  ░
+    ░  │  ▄▀▀▀▄   ▄▀▀▀▄    │  ░
+    ░  │ █ ◉ █   █ ◉ █   │  ░
+    ░  │  ▀▄▄▄▀   ▀▄▄▄▀    │  ░
+    ░  │      ▄███████▄      │  ░
+    ░  │    ▄█ ░░░░░░░ █▄    │  ░
+    ░  │   █░ ▄▄▄▄▄▄▄ ░█   │  ░
+    ░  │   █░ █ ▀▀▀ █ ░█   │  ░
+    ░  │    ▀█▄▄▄▄▄▄▄█▀    │  ░
+    ░  │   ◈ GHOST.EXE ◈   │  ░
+    ░  └─────────────────────┘  ░
+     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░`,
+
+  // ── 2. Cyberpunk City Skyline ──────────────────────────────────────────────
+  `
+    ║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║
+    ║  .  .     ___  .  .  ___        .    ║
+    ║  |  |    |   | |  | |   |  |\   |    ║
+    ║ _|__|_   |___| |__| |___|  | \  |    ║
+    ║|      | __|__ __|__ __|__  |  \ | /| ║
+    ║| CORP ||  |  ||  |  ||  |  |   \|/ | ║
+    ║|______||__|__||__|__||__|  |    *  | ║
+    ║▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄║
+    ║~ ~ ~ ~ T H E   S P R A W L ~ ~ ~ ~ ~ ║
+    ║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║`,
+
+  // ── 3. Neural Jack / Data Port ─────────────────────────────────────────────
+  `
+         ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        █               █
+        █  ◈──────────◈ █
+        █  │ JACK  IN │ █
+        █  ◈──────────◈ █
+        █               █
+        █  [●][●][●][●] █
+        █  [●][●][●][●] █
+        █               █
+         ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+        ╔═══════════════╗
+        ║  PORT  0x4A2  ║
+        ║  STATUS: LIVE ║
+        ╚═══════════════╝`,
+
+  // ── 4. Transmission Satellite ──────────────────────────────────────────────
+  `
+     ═══╗         ╔═══
+     ───╫─────────╫───
+        ║  ╔═══╗  ║
+        ║  ║▓▓▓║  ║
+        ╚══╣▓▓▓╠══╝
+           ║▓▓▓║
+           ║▓▓▓║
+           ╚═╦═╝
+      ░░░░░░░║░░░░░░░
+      ░  ~~~~║~~~~  ░
+      ░ ≋≋≋≋≋║≋≋≋≋≋ ░
+      ░  ~~~~║~~~~  ░
+      ░░░░░░░║░░░░░░░
+       [ NET-SAT-7 RELAY ]`,
+
 ]);

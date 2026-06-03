@@ -170,6 +170,25 @@ h1 {
   letter-spacing: 0.15em;
 }
 
+/* ── ASCII Art Block ────────────────────────────────────────── */
+.ascii-art {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--clr-cyan);
+  text-shadow: 0 0 6px rgba(0, 245, 255, 0.5);
+  white-space: pre;           /* preserve exact whitespace & box chars */
+  overflow-x: auto;
+  padding: 1.25rem 2rem 0.5rem;
+}
+
+/* Separator between ASCII art and fortune body */
+.term-art-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,245,255,0.35), transparent);
+  margin: 0.75rem 2rem;
+}
+
 /* ── Fortune Display Area ───────────────────────────────────── */
 .fortune-body {
   padding: 2rem 2rem 1.5rem;
