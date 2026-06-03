@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <title>Mixed Messages — Cyberpunk Fortune Terminal</title>
+  <meta name="description"
+        content="A cyberpunk-themed randomized fortune generator. Every transmission is unique." />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="terminal-wrap">
+
+    <!-- ── Header ──────────────────────────────────────────── -->
+    <header>
+      <p class="logo-tag">◈ Fortune Protocol v2.0 ◈</p>
+      <h1>Mixed Messages</h1>
+      <p class="subtitle">Net Transmission Generator — Cyberpunk Edition</p>
+    </header>
+
+    <!-- ── Terminal Panel ───────────────────────────────────── -->
+    <div class="terminal-panel" id="terminal-panel" role="region" aria-live="polite" aria-label="Fortune output">
+
+      <!-- Fake OS title bar -->
+      <div class="term-bar">
+        <div class="term-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="term-title">NET_FORTUNE.exe — root@matrix:~$</div>
+      </div>
+
+      <!-- Fortune display -->
+      <div class="fortune-body" id="fortune-body">
+        <!-- Filled dynamically by JS -->
+        <p class="fortune-init">
+          Awaiting transmission<span class="cursor"></span>
+        </p>
+      </div>
+
+      <div class="term-divider"></div>
+      <p class="term-tagline" id="term-tagline" hidden>
+        [ This transmission will self-corrupt in 10 seconds. Stay ghost. ]
+      </p>
+
+    </div>
+
+    <!-- ── Action Button ─────────────────────────────────────── -->
+    <button
+      class="btn-generate"
+      id="btn-generate"
+      type="button"
+      aria-label="Generate a new fortune message"
+    >
+      ⚡ Generate Transmission
+    </button>
+
+    <!-- ── Stats ─────────────────────────────────────────────── -->
+    <div class="stats-bar">
+      <span>Transmissions: <strong id="stat-count">0</strong></span>
+      <span>Possible combos: <strong id="stat-combos">—</strong></span>
+      <span>Session seed: <strong id="stat-seed">—</strong></span>
+    </div>
+
+  </div><!-- /.terminal-wrap -->
+
+
+  <!--
+    ── Web Entry Point ────────────────────────────────────────────────────────
+    We import the same generator module used by the Node CLI (src/engine/generator.js).
+    The data and utility modules are loaded transitively — zero duplication.
+
+    type="module" enables:
+      • ES6 import/export in the browser natively
+      • Automatic strict mode
+      • Deferred execution (no need for DOMContentLoaded)
+  -->
+  <script type="module">
+    // ── Imports: reuse the existing JS module graph as-is ──────────────────
+    import { generateMixedMessage } from "./src/engine/generator.js";
+    import { PERSONAS, THREATS, PROTOCOLS } from "./src/data/messages.js";
+
+    // ── DOM refs ───────────────────────────────────────────────────────────
+    const panel      = document.getElementById("terminal-panel");
+    const body       = document.getElementById("fortune-body");
+    const tagline    = document.getElementById("term-tagline");
+    const btn        = document.getElementById("btn-generate");
+    const statCount  = document.getElementById("stat-count");
+    const statCombos = document.getElementById("stat-combos");
+    const statSeed   = document.getElementById("stat-seed");
+
+    // ── Compute static stats ───────────────────────────────────────────────
+    const totalCombos = PERSONAS.length * THREATS.length * PROTOCOLS.length;
+    statCombos.textContent = totalCombos.toLocaleString();
+    statSeed.textContent   = Math.random().toString(36).slice(2, 8).toUpperCase();
+
+    // ── State ──────────────────────────────────────────────────────────────
+    let transmissionCount = 0;
+
+    // ── renderFortune ──────────────────────────────────────────────────────
+    /**
+     * Calls generateMixedMessage(), parses the three components out of the
+     * returned string, and renders them into styled DOM rows.
+     *
+     * We re-parse the raw string so that the generator module stays as the
+     * single source of truth for formatting logic. Alternatively the engine
+     * could export a structured object — but that would require changing the
+     * CLI output too, so parsing here keeps both interfaces happy.
+     */
+    function renderFortune() {
+      // Prevent double-clicks during animation
+      btn.classList.add("generating");
+      btn.disabled = true;
+
+      // Flash the panel border on each new message
+      panel.classList.remove("flash");
+      void panel.offsetWidth; // force reflow to re-trigger animation
+      panel.classList.add("flash");
+
+      // Small deliberate delay — mimics "transmission incoming" feel
+      setTimeout(() => {
+        // ── Generate raw message & extract the three lines ───────────────
+        // The generator returns a block string; we extract the three data
+        // lines using regex so the data layer owns the truth.
+        const raw = generateMixedMessage();
+
+        // Regex matches the text after "»" on each of the three data rows.
+        const personaMatch  = raw.match(/IDENTITY SCAN\s+»\s+You are a (.+)\./);
+        const threatMatch   = raw.match(/THREAT ASSESSMENT\s+»\s+The Net has determined that (.+)\./);
+        const protocolMatch = raw.match(/RECOMMENDED ACTION\s+»\s+(.+?)(?=\n|$)/);
+
+        const persona  = personaMatch?.[1]  ?? "Unknown operative";
+        const threat   = threatMatch?.[1]   ?? "an unknown threat";
+        const protocol = protocolMatch?.[1] ?? "Stand by for further instructions.";
+
+        // ── Build DOM ───────────────────────────────────────────────────
+        body.innerHTML = `
+          <div class="fortune-row">
+            <span class="row-label identity">◉ Identity Scan</span>
+            <span class="row-value">You are a ${persona}.</span>
+          </div>
+          <div class="fortune-row">
+            <span class="row-label threat">◉ Threat Assessment</span>
+            <span class="row-value">The Net has determined that ${threat}.</span>
+          </div>
+          <div class="fortune-row">
+            <span class="row-label action">◉ Recommended Action</span>
+            <span class="row-value">${protocol}</span>
+          </div>
+        `;
+
+        tagline.hidden = false;
+
+        // Update stats
+        transmissionCount++;
+        statCount.textContent = transmissionCount;
+
+        // Re-enable button after animations settle
+        setTimeout(() => {
+          btn.classList.remove("generating");
+          btn.disabled = false;
+        }, 500);
+
+      }, 180);
+    }
+
+    // ── Wire up button ─────────────────────────────────────────────────────
+    btn.addEventListener("click", renderFortune);
+
+    // ── Auto-fire on page load for instant gratification ──────────────────
+    renderFortune();
+  </script>
+
+</body>
+</html>
